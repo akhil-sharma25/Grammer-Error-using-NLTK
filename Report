@@ -10,7 +10,16 @@ Project Discription-
 We have created project to find gramatical error in a given text using NLTK and correcting the given text.Input is given by creating another 
 file named TestingData.txt and output is created in CorrectedData.txt and file input is given in TrainingData.txt.
 
-Screenshots-
+Screenshots- Screenshots are uploaded in .PNG files in the project itself.
 
-1) Training Data-
+Installation Process-
+Upload the given code in the Jupyter Ipython notebook.
+
+Detailed Discription-
+We have used libraries like NLTK and Numpy. Using training data we took input and analysed on our test data which automatically created output in our
+correctingData.txt . First of all the input sentence is splitted to every single word using tokenize . If a sentence is of 3 words
+it is assumed that it is already correct and if a sentence is of 5 words it can at max have a single error , but if the sentence is more then 5 words
+it can have multiple corrections. So function of every gram is created and in our main code we took 3 different case as stated above. Now all the words 
+of sentence are splitted and using ngrams sentence is joined. Bigrams and Trigrams are mainly used which joined the 2 words at a time and 3 at a time respectively.
+The sentence with most probabilty is given as output. Splitting of senteces is given by tokenize and joining is done by ngrams.
 
