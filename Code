@@ -1,0 +1,164 @@
+import re
+import nltk
+import numpy as np
+from collections import defaultdict
+from nltk.util import ngrams,bigrams,trigrams
+from nltk.tokenize import sent_tokenize,word_tokenize
+
+#Function to return the relative index of the highest value
+def maxProbIndex(arr):
+    MAXi=0;
+    for i in range(0,len(arr)):
+        if arr[i]>arr[MAXi]:
+            MAXi=i
+    return MAXi
+
+#            
+def QuadgramDict():
+    model = defaultdict(lambda:defaultdict(lambda:0))
+    distsentences = sent_tokenize(file_content)
+    for sen in distsentences:
+        for w1,w2,w3,w4 in (ngrams(word_tokenize(sen), n=4, pad_left=True, pad_right=True)):
+            #print(ng)
+            model[(w1,w2,w3)][w4] +=1
+    for w1_w2_w3 in model:
+        total_cout =float(sum(model[w1_w2_w3].values()))
+        for w4 in model[w1_w2_w3]:
+            model[w1_w2_w3][w4] /= total_cout
+    return model
+#
+def Quadgrams(pre_word1,pre_word2,pre_word3,word,dict1):    
+    return dict1[(pre_word1,pre_word2,pre_word3)][word]    
+
+#
+def TrigramDict():
+    model = defaultdict(lambda:defaultdict(lambda:0))
+    distsentences = sent_tokenize(file_content)
+    for sen in distsentences:
+        for w1,w2,w3 in (trigrams(word_tokenize(sen),pad_right=True,pad_left=True)):
+            model[(w1,w2)][w3] +=1
+    for w1_w2 in model:
+        total_cout =float(sum(model[w1_w2].values()))
+        for w3 in model[w1_w2]:
+            model[w1_w2][w3] /= total_cout
+    return model
+
+#
+def Trigrams(pre_word1,pre_word2,word,dict1):    
+    return dict1[(pre_word1,pre_word2)][word]    
+
+#
+def BigramDict():    
+    model1 = defaultdict(lambda:defaultdict(lambda:0))
+    distsentences = sent_tokenize(file_content)
+    for sen in distsentences:
+        for w1,w2 in (bigrams(word_tokenize(sen),pad_right=True,pad_left=True)):
+           # print(model1[w1][w2])
+            model1[w1][w2] +=1
+    for w1 in model1:
+        total_cout_b =float(sum(model1[w1].values()))
+        for w2 in model1[w1]:
+            model1[w1][w2] /= total_cout_b
+    return model1
+
+#
+def Bigrams(pre_word,word,dict1):    
+    return dict1[pre_word][word]
+
+ipdta=open('TestingData.txt').read()
+senarr=re.split('\n',ipdta)
+
+file_content =  open("TrainingData.txt",encoding="latin-1").read()
+text_file = open("CorrectedData.txt", "w")
+
+BD=BigramDict()
+TD=TrigramDict()
+QD=QuadgramDict()
+
+#For each sentence in input
+for i in range(0,len(senarr)):
+    #Getting the tokens for said sentence
+    wors=nltk.word_tokenize(senarr[i])
+    
+    #Cause Sentences less than = 3 tokens long are correct only 
+    if(len(wors)<4):
+        text_file.write(senarr[i])
+    else:
+        #Cause sentences with upto 5 words need only one correction
+        prob=np.zeros(len(wors))
+        for p in range(1,len(wors)-1):
+            prob[p]=Bigrams(wors[0],wors[p],BD)
+        ind=maxProbIndex(prob[1:len(wors)-1])
+        wors[1],wors[ind+1]=wors[ind+1],wors[1]
+        
+        #Cause sentences above 5 words need multiple corrections
+        if(len(wors)>5):
+            prob=np.zeros(len(wors))
+            for p in range(2,len(wors)-1):
+                prob[p]=Trigrams(wors[0],wors[1],wors[p],TD)
+            ind=maxProbIndex(prob[2:len(wors)-1])
+            wors[2],wors[ind+2]=wors[ind+2],wors[2] #swapping
+        
+            for quas in range(3,len(wors)-2):
+                prob=np.zeros(len(wors))
+                for p in range(quas,len(wors)-1):
+                    prob[p]=Quadgrams(wors[quas-3],wors[quas-2],wors[quas-1],wors[p],QD)
+                ind=maxProbIndex(prob[quas:len(wors)-1])
+                wors[quas],wors[ind+quas]=wors[ind+quas],wors[quas] #swapping
+        
+        pt=(' ').join(wors)+'\n'
+        text_file.write(pt)
+
+text_file.close()
+print('CorrectedData.txt Made...')
+
+import re
+import random
+import nltk
+import math
+
+
+persplit=0.9
+#source
+
+#get sentences
+ntext=nltk.sent_tokenize(ipdta) 
+
+#destination file for training data
+text_file = open("TrainingData.txt", "w")
+text_file2 = open("TestingData.txt", "w")
+text_file3 = open("TestingDataChecker.txt", "w")
+
+leng=len(ntext)
+tr=math.trunc(persplit*leng)
+
+for i in range(0,tr):
+    text_file.write(ntext[i])
+text_file.close()
+print('TrainingData.txt Made 90%')
+
+for i in range(tr,leng):
+    a = nltk.word_tokenize(ntext[i])
+    pt=(' ').join(a)+'\n'
+    text_file3.write(pt)
+    # Pick random substring to mess up 
+    if (len(a)>3):
+        rin=random.randint(1,min(1,(len(a)-3)))    
+        mpos=random.randint(2,7)+rin
+    
+        while mpos>=len(a)-1:
+            mpos=mpos-1
+        b=a[rin:mpos+1]
+        random.shuffle(b,random.random)
+        b=a[0:rin]+b+a[mpos+1:len(a)]
+        pt=(' ').join(b)
+        pt=pt+'\n'
+    else :
+        pt=(' ').join(a)+'\n'
+    
+    #Write to file
+    text_file2.write(pt)
+
+text_file2.close()
+print('TestingDataChecker.txt Made...')
+print('TestingData.txt Made...')
