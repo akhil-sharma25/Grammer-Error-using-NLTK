@@ -1,0 +1,16 @@
+Team Members-
+
+1)Akhil Sharma 17UCC009
+2)Vishal Agrawal 17UCC068
+3)Yash Agarwal 17DCS016
+
+
+Project Discription-
+
+We have created project to find gramatical error in a given text using NLTK and correcting the given text.Input is given by creating another 
+file named TestingData.txt and output is created in CorrectedData.txt and file input is given in TrainingData.txt.
+
+Screenshots-
+
+1) Training Data-
+
